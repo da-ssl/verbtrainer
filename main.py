@@ -89,6 +89,12 @@ class abfrageFenster(QMainWindow):
     def loadFeedback(self):
         correctForm = conjugateVerb(self.cverb, self.cform, self.ctense, self.lang)
         eingabe = self.tbEingabe.text().strip()
+
+        # Falls keine Eingabe, mittels MessageBox nach Bestätigung fragen
+        if eingabe in [" ", "", None]:
+            if self.confirmDialog() != True:
+                return False
+
         if eingabe == correctForm:
             self.lblFeedback.setText("La stufa scalda bene!")
             self.lblFeedback.setStyleSheet("background-color: lime; color: black;")
@@ -108,6 +114,14 @@ class abfrageFenster(QMainWindow):
         self.tbEingabe.returnPressed.connect(self.btnNextVerb.click)
         self.btnEingabe.setVisible(False)
         self.btnNextVerb.setVisible(True)
+
+    def confirmDialog(self) -> bool:
+        msgBox = QMessageBox()
+        ret = msgBox.question(self, "Bestätigen?", "Ihre Eingabe scheint leer zu sein. Wollen Sie fortfahren?")
+        if ret == 16384:
+            return True
+        else:
+            return False
 
     def loadNewVerb(self):
         for i in [self.lblFeedback, self.lblFeedback2]:
@@ -259,6 +273,7 @@ class mainWindow(QMainWindow):
 
         aw = abfrageFenster(golang, gotenses, goverbs, self)
         aw.show()
+
 
 def getTenseIDByName(tensename, lang):
         dic = dics.tensenames
