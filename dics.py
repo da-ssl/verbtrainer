@@ -7,14 +7,12 @@ personDict = {
         5: "3. Person Plural"},
     "fr": {0: "1. Person Singular",
         1: "2. Person Singular",
-        2: "3. Person Singular",
-        3: "3. Person Singular, maskulin",
-        4: "3. Person Singular, feminin",
-        5: "1. Person Plural",
-        6: "2. Person Plural",
-        7: "3. Person Plural",
-        8: "3. Person Plural, maskulin",
-        9: "3. Person Plural, feminin",
+        2: "3. Person Singular, maskulin",
+        3: "3. Person Singular, feminin",
+        4: "1. Person Plural",
+        5: "2. Person Plural",
+        6: "3. Person Plural, maskulin",
+        7: "3. Person Plural, feminin"
         }
 }
 
@@ -27,14 +25,17 @@ personenDictDB = {
         5: "p3"},
     "fr": {0: "s1",
         1: "s2",
-        2: "s3",
-        3: "s31",
-        4: "s32",
-        5: "p1",
-        6: "p2",
-        7: "p3",
-        8: "p31",
-        9: "p32"}
+        2: "s31",
+        3: "s32",
+        4: "p1",
+        5: "p2",
+        6: "p31",
+        7: "p32"}
+}
+
+personcount = {
+    "it": 6,
+    "fr": 8
 }
 
 pronomenDic = {
@@ -48,14 +49,12 @@ pronomenDic = {
     "fr": {
         0: "je/j'",
         1: "tu",
-        2: "il/elle",
-        3: "il",
-        4: "elle",
-        5: "nous",
-        6: "vous",
-        7: "ils/elles",
-        8: "ils",
-        9: "elles",
+        2: "il",
+        3: "elle",
+        4: "nous",
+        5: "vous",
+        6: "ils",
+        7: "elles",
     }
 }
 
@@ -145,10 +144,5 @@ most_important_verbs = {
 supported_languages = {
     "Italienisch": "it",
     "Französisch": "fr"
-}
-
-personcount = {
-    "it": 6,
-    "fr": 10
 }
 

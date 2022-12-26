@@ -123,7 +123,11 @@ class abfrageFenster(QMainWindow):
         self.ctense = rVerb[2]
         self.lblZeitform2.setText(self.ctense)
         self.lblPronomen.setText(dics.pronomenDic[self.lang][self.cform])
-        print(conjugateVerb(self.cverb, self.cform, self.ctense, self.lang))
+        curc = conjugateVerb(self.cverb, self.cform, self.ctense, self.lang)
+        if "_" in curc:
+            print("<<<<< FEHLER >>>>>")
+            print(curc)
+            print("^^^^^^^^^^^^^^^^^^")
         #try: print(conjugateVerb(self.cverb, self.cform, self.ctense))
         #except: print("Error while conjugating")
 
@@ -242,7 +246,6 @@ class mainWindow(QMainWindow):
             self.tenseItems[i].setCheckState(Qt.CheckState.Checked)
 
     def go(self):
-        print("Neue Form wird geladen, alte geschlossen..")
         golang = self.currentlang
         goverbs = []
         for i in self.verbListItems:
@@ -257,7 +260,6 @@ class mainWindow(QMainWindow):
         aw = abfrageFenster(golang, gotenses, goverbs, self)
         aw.show()
 
-
 def getTenseIDByName(tensename, lang):
         dic = dics.tensenames
         for i in dic[lang].keys():
@@ -265,14 +267,12 @@ def getTenseIDByName(tensename, lang):
             if sers == tensename:
                 return i
 
-
 def getCExerciseID() -> int:
     cur = conn.cursor()
     res = cur.execute("SELECT MAX(exercise_id) FROM results")
     res = res.fetchone()[0]
     if res in [None, 0]: currentExerciseID = 1
     else: currentExerciseID = res+1
-    print(currentExerciseID)
     return(currentExerciseID)
 
 def writeToResults(verb, input, success):
@@ -302,7 +302,6 @@ def conjugateVerb(infinitive, person, tense, lang):
     try: nperson = dics.personenDictDB[lang][person]
     except: pass
     spalte = f'"{ntense}_{nperson}"'
-    print(spalte)
     cur.execute(f'SELECT {spalte} from {lang} WHERE infinitive="{infinitive}"')
     resp = cur.fetchone()
     return(resp[0])
