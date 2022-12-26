@@ -352,9 +352,25 @@ def analasys():
     self.lblResults.setText(restext)
     self.centrallayout.addWidget(self.lblHeader)
     self.centrallayout.addWidget(self.lblResults)
+    self.setWindowIcon(QIcon(QPixmap("icon.svg")))
+    self.setWindowTitle("Ergebnisauswertung")
 
     # TableView
-
+    self.table = QTableWidget()
+    self.table.verticalHeader().setVisible(False)
+    self.table.horizontalHeader().setVisible(True)
+    self.table.setColumnCount(3)
+    self.table.setHorizontalHeaderLabels(["Korrekt", "Eingabe", "Status"])
+    self.table.setRowCount(totalCount)  
+    for i in range(totalCount):
+        self.table.setItem(i, 0, QTableWidgetItem(res[i][0]))
+        self.table.setItem(i, 1, QTableWidgetItem(res[i][1]))
+        cor = ""
+        if res[i][2] == 1: cor = "Richtig"
+        if res[i][2] == 0: cor = "Falsch"
+        self.table.setItem(i, 2, QTableWidgetItem(cor))
+        self.table.setRowHeight(i, 24)
+    self.centrallayout.addWidget(self.table)
 
     self.exec()
 
