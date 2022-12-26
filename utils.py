@@ -8,3 +8,4 @@ def highlight_differences(a, b):
         elif diff[0] == '-':
             result.append('<b>' + diff[-1] + '</b>')
     return ''.join(result)
+

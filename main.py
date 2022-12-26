@@ -1,38 +1,26 @@
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
-import sys, sqlite3, random, datetime, difflib, utils
+import sys, sqlite3, random, datetime, dics, utils
 
 conn = sqlite3.connect('verbs.db')
-zeiten = ["presente", "futuro", "passato prossimo","imperfetto","congiuntivo"]
 personen = ["1PS","2PS", "3PS", "1PP", "2PP", "3PP"]
-personenDic = {
-    "1PS": "1. Person Singular",
-    "2PS": "2. Person Singular",
-    "3PS": "3. Person Singular",
-    "1PP": "1. Person Plural",
-    "2PP": "2. Person Plural",
-    "3PP": "3. Person Plural"
-}
-pronomenDic = {
-    "1PS": "io",
-    "2PS": "tu",
-    "3PS": "lei/lui",
-    "1PP": "noi",
-    "2PP": "voi",
-    "3PP": "loro"
-}
+
+
 currentExerciseID = -1
 
 class abfrageFenster(QMainWindow):
-    def __init__(self, parent=None):
-        super().__init__()
+    def __init__(self, lang, tenses, verbs, parent=None):
+        super(abfrageFenster, self).__init__(parent)
 
         icon = QIcon()
         sers = QPixmap("icon.svg")
         icon.addPixmap(sers)
         self.setWindowIcon(icon)
 
+        self.verbs = verbs
+        self.lang = lang
+        self.tenses = tenses
 
         self.setWindowTitle("Verbkonjugation")
         self.cform = ""
@@ -99,7 +87,7 @@ class abfrageFenster(QMainWindow):
         self.show()
 
     def loadFeedback(self):
-        correctForm = conjugateVerb(self.cverb, self.cform, self.ctense)
+        correctForm = conjugateVerb(self.cverb, self.cform, self.ctense, self.lang)
         eingabe = self.tbEingabe.text().strip()
         if eingabe == correctForm:
             self.lblFeedback.setText("La stufa scalda bene!")
@@ -125,16 +113,19 @@ class abfrageFenster(QMainWindow):
         for i in [self.lblFeedback, self.lblFeedback2]:
             i.setText("")
             i.setStyleSheet("")
-        rVerb = getRandomVerb()
+        rVerb = getRandomVerb(self.verbs, dics.personcount[self.lang], self.tenses)
+        # ['sentire', 1, 'passato prossimo']
         self.cverb = rVerb[0]
         self.lblVerb2.setText(self.cverb)
         self.cform = rVerb[1]
-        self.cformF = personenDic[rVerb[1]]
+        self.cformF = dics.personDict[self.lang][self.cform]
         self.lblVerbform2.setText(self.cformF)
         self.ctense = rVerb[2]
         self.lblZeitform2.setText(self.ctense)
-        self.lblPronomen.setText(pronomenDic[rVerb[1]])
-        print(conjugateVerb(self.cverb, self.cform, self.ctense))
+        self.lblPronomen.setText(dics.pronomenDic[self.lang][self.cform])
+        print(conjugateVerb(self.cverb, self.cform, self.ctense, self.lang))
+        #try: print(conjugateVerb(self.cverb, self.cform, self.ctense))
+        #except: print("Error while conjugating")
 
         # Die Eingabeform wird geladen, die Feedbackform rausgeladen
         try: self.tbEingabe.returnPressed.disconnect(self.btnNextVerb.click)
@@ -145,6 +136,135 @@ class abfrageFenster(QMainWindow):
         self.tbEingabe.setStyleSheet("background-color: white;")
         self.btnNextVerb.setVisible(False)
         self.btnEingabe.setVisible(True)
+
+class mainWindow(QMainWindow):
+    def __init__(self, parent=None):
+        super().__init__()
+        # Willkommen
+        self.lblWelcome = QLabel("<h1>Wilkommen.</h1>")
+        # Sprache
+        self.lblChooseLang = QLabel("Bitte Wählen Sie ihre Sprache aus.")
+        self.comboBoxLang = QComboBox()
+        self.loadLangs(self.comboBoxLang)
+        # Verben
+        self.lblVerbs = QLabel("Bitte wählen Sie hier Ihre Verben aus:")
+        self.listBoxVerbs = QListWidget()
+        self.btnMostImportantVerbs = QPushButton("10 Wichtigste")
+        self.btnMostImportantVerbs.clicked.connect(self.selectVIPVerbs)
+        self.btnNoVerbs = QPushButton("Keins")
+        self.btnNoVerbs.clicked.connect(self.UncheckAllVerbs)
+        self.btnAllVerbs = QPushButton("Alle")
+        self.btnAllVerbs.clicked.connect(self.CheckAllVerbs)
+        self.hlayoutverboptions = QHBoxLayout()
+        self.hlayoutverboptions.addWidget(self.btnMostImportantVerbs)
+        self.hlayoutverboptions.addWidget(self.btnNoVerbs)
+        self.hlayoutverboptions.addWidget(self.btnAllVerbs)
+        self.comboBoxLang.currentTextChanged.connect(self.loadVerbs)
+        self.comboBoxLang.currentTextChanged.connect(self.loadTenses)
+        self.loadVerbs()
+        # Zeiten
+        self.lblTenses = QLabel("Wählen Sie hier bitte die abzufragenden Zeiten aus:")
+        self.listBoxTenses = QListWidget()
+        self.btnNoTenses = QPushButton("Keine")
+        self.btnAllTenses = QPushButton("Alle")
+        self.btnNoTenses.clicked.connect(self.UncheckAllTenses)
+        self.btnAllTenses.clicked.connect(self.CheckAllTenses)
+        self.hlayouttenseoptions = QHBoxLayout()
+        self.hlayouttenseoptions.addWidget(self.btnAllTenses)
+        self.hlayouttenseoptions.addWidget(self.btnNoTenses)
+        self.loadTenses()
+
+        # Go
+        self.btnGo = QPushButton("Los")
+        self.btnGo.clicked.connect(self.go)
+
+        self.centralwidget = QWidget()
+        self.setCentralWidget(self.centralwidget)
+        self.vlayout = QVBoxLayout()
+        self.vlayout.addWidget(self.lblWelcome)
+        self.vlayout.addWidget(self.lblChooseLang)
+        self.vlayout.addWidget(self.comboBoxLang)
+        self.vlayout.addWidget(self.lblVerbs)
+        self.vlayout.addWidget(self.listBoxVerbs)
+        self.vlayout.addLayout(self.hlayoutverboptions)
+        self.vlayout.addWidget(self.lblTenses)
+        self.vlayout.addWidget(self.listBoxTenses)
+        self.vlayout.addLayout(self.hlayouttenseoptions)
+        self.vlayout.addWidget(self.btnGo)
+        self.centralwidget.setLayout(self.vlayout)
+        
+        self.show()
+    
+    def CheckAllTenses(self):
+        for i in self.tenseItems:
+            i.setCheckState(Qt.CheckState.Checked)
+    def UncheckAllTenses(self):
+        for i in self.tenseItems:
+            i.setCheckState(Qt.CheckState.Unchecked)
+    def UncheckAllVerbs(self):
+        for i in self.verbListItems:
+            i.setCheckState(Qt.CheckState.Unchecked)
+    def CheckAllVerbs(self):
+        for i in self.verbListItems:
+            i.setCheckState(Qt.CheckState.Checked)
+    def loadLangs(self, cb: QComboBox):
+        for i in dics.supported_languages.keys():
+            cb.addItem(i)
+        self.currentlang = dics.supported_languages[cb.currentText()]
+    def selectVIPVerbs(self):
+        # Alle Verben deaktivieren und nur die wichtigsten (dics.most_important_verbs) aktivieren
+        vipverbs = dics.most_important_verbs[self.currentlang]
+        for i in self.verbListItems:
+            i.setCheckState(Qt.CheckState.Unchecked)
+            if i.text() in vipverbs:
+                i.setCheckState(Qt.CheckState.Checked)
+    def loadVerbs(self):
+        self.currentlang = dics.supported_languages[self.comboBoxLang.currentText()]
+        self.listBoxVerbs.clear()
+        cur = conn.cursor()
+        cur.execute(f'SELECT infinitive FROM {dics.supported_languages[self.comboBoxLang.currentText()]}')
+        res = cur.fetchall()
+        self.verbListItems = []
+        for i in range(len(res)):
+            self.verbListItems.insert(i, QListWidgetItem(self.listBoxVerbs))
+            self.verbListItems[i].setText(res[i][0])
+            self.verbListItems[i].setCheckState(Qt.CheckState.Checked)
+
+        self.listBoxVerbs.sortItems(Qt.SortOrder.AscendingOrder)
+    def loadTenses(self):
+        self.listBoxTenses.clear()
+        lang = dics.supported_languages[self.comboBoxLang.currentText()]
+        tenses = dics.tenses[lang]
+        self.tenseItems = []
+        for i in range(len(tenses)):
+            self.tenseItems.insert(i, QListWidgetItem(self.listBoxTenses))
+            self.tenseItems[i].setText(dics.tensenames[lang][tenses[i]])
+            self.tenseItems[i].setCheckState(Qt.CheckState.Checked)
+
+    def go(self):
+        print("Neue Form wird geladen, alte geschlossen..")
+        golang = self.currentlang
+        goverbs = []
+        for i in self.verbListItems:
+            if i.checkState() == Qt.CheckState.Checked:
+                goverbs.append(i.text())
+        gotenses = []
+        for i in self.tenseItems:
+            if i.checkState() == Qt.CheckState.Checked:
+                currentTenseName = getTenseIDByName(i.text(), golang)
+                gotenses.append(currentTenseName)
+
+        aw = abfrageFenster(golang, gotenses, goverbs, self)
+        aw.show()
+
+
+def getTenseIDByName(tensename, lang):
+        dic = dics.tensenames
+        for i in dic[lang].keys():
+            sers = dic[lang][i]
+            if sers == tensename:
+                return i
+
 
 def getCExerciseID() -> int:
     cur = conn.cursor()
@@ -166,26 +286,24 @@ def writeToResults(verb, input, success):
     cur.execute(sql)
     conn.commit()
 
-def getRandomVerb():
-    
+def getRandomVerb(inputVerbs, inputPersons, inputTenses):
+    idRandomVerb = random.randint(0, len(inputVerbs)-1)
+    idRandomPerson = random.randint(0, inputPersons-1)
+    idRandomTense = random.randint(0, len(inputTenses)-1)
+
+    return([inputVerbs[idRandomVerb], idRandomPerson, inputTenses[idRandomTense]])
+
+def conjugateVerb(infinitive, person, tense, lang):
     cur = conn.cursor()
-    cur.execute('SELECT infinitivo FROM it')
-    resp = cur.fetchall()
-
-    anzahlVerben = len(resp)-1
-    idRandomVerb = random.randint(0,anzahlVerben)
-    
-    idRandomPerson = random.randint(0, 5)
-    idRandomTense = random.randint(0, 4)
-
-    done = [resp[idRandomVerb][0], personen[idRandomPerson], zeiten[idRandomTense]]
-    
-    return(done)
-
-def conjugateVerb(infinitive, person, tense):
-    cur = conn.cursor()
-    spalte = f'"{person} {tense}"'
-    cur.execute(f'SELECT {spalte} from it WHERE infinitivo="{infinitive}"')
+    #ntense = getTenseIDByName(tense, lang)
+    #except KeyError: ntense = tense
+    ntense = tense
+    nperson = ""
+    try: nperson = dics.personenDictDB[lang][person]
+    except: pass
+    spalte = f'"{ntense}_{nperson}"'
+    print(spalte)
+    cur.execute(f'SELECT {spalte} from {lang} WHERE infinitive="{infinitive}"')
     resp = cur.fetchone()
     return(resp[0])
 
@@ -223,6 +341,6 @@ def analasys():
 
 
 app = QApplication(sys.argv)
-window = abfrageFenster()
+window = mainWindow()
 window.show()
 app.exec()
