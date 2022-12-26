@@ -7,6 +7,7 @@ conn = sqlite3.connect('verbs.db')
 personen = ["1PS","2PS", "3PS", "1PP", "2PP", "3PP"]
 
 
+
 currentExerciseID = -1
 
 class abfrageFenster(QMainWindow):
@@ -138,10 +139,7 @@ class abfrageFenster(QMainWindow):
         self.lblZeitform2.setText(self.ctense)
         self.lblPronomen.setText(dics.pronomenDic[self.lang][self.cform])
         curc = conjugateVerb(self.cverb, self.cform, self.ctense, self.lang)
-        if "_" in curc:
-            print("<<<<< FEHLER >>>>>")
-            print(curc)
-            print("^^^^^^^^^^^^^^^^^^")
+        print(curc)
         #try: print(conjugateVerb(self.cverb, self.cform, self.ctense))
         #except: print("Error while conjugating")
 
@@ -196,6 +194,7 @@ class mainWindow(QMainWindow):
         self.btnGo = QPushButton("Los")
         self.btnGo.clicked.connect(self.go)
 
+        # Layouts
         self.centralwidget = QWidget()
         self.setCentralWidget(self.centralwidget)
         self.vlayout = QVBoxLayout()
@@ -210,6 +209,13 @@ class mainWindow(QMainWindow):
         self.vlayout.addLayout(self.hlayouttenseoptions)
         self.vlayout.addWidget(self.btnGo)
         self.centralwidget.setLayout(self.vlayout)
+
+        # Icon & Titel
+        icon = QIcon()
+        iconPixmap = QPixmap("icon.svg")
+        icon.addPixmap(iconPixmap)
+        self.setWindowIcon(icon)
+        self.setWindowTitle("Verbtrainer")
         
         self.show()
     
@@ -273,7 +279,6 @@ class mainWindow(QMainWindow):
 
         aw = abfrageFenster(golang, gotenses, goverbs, self)
         aw.show()
-
 
 def getTenseIDByName(tensename, lang):
         dic = dics.tensenames
