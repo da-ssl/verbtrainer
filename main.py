@@ -4,10 +4,6 @@ from PyQt6.QtWidgets import *
 import sys, sqlite3, random, datetime, dics, utils, json
 
 conn = sqlite3.connect('verbs.db')
-personen = ["1PS","2PS", "3PS", "1PP", "2PP", "3PP"]
-
-
-
 currentExerciseID = -1
 
 class menuButton(QPushButton):
@@ -152,7 +148,7 @@ class abfrageFenster(QMainWindow):
         self.cformF = dics.personDict[self.lang][self.cform]
         self.lblVerbform2.setText(self.cformF)
         self.ctense = rVerb[2]
-        self.lblZeitform2.setText(self.ctense)
+        self.lblZeitform2.setText(dics.tensenames[self.lang][self.ctense])
         self.lblPronomen.setText(dics.pronomenDic[self.lang][self.cform])
         curc = conjugateVerb(self.cverb, self.cform, self.ctense, self.lang)
         print(curc)
@@ -320,6 +316,7 @@ class mainWindow(QMainWindow):
         cur = conn.cursor()
         cur.execute("SELECT * FROM presets")
         res = cur.fetchall()
+        if len(res) == 0: return
         self.btnPresets.clearMenuItems()
         self.presetActions = []
         for i in range(len(res)):
