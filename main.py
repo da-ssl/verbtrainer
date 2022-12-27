@@ -255,8 +255,13 @@ class mainWindow(QMainWindow):
                 for y in self.verbListItems:
                     if y.text() == i:
                         y.setCheckState(Qt.CheckState.Checked)
+            # Tenses
             for i in self.tenseItems:
                 i.setCheckState(Qt.CheckState.Unchecked)
+            for i in preset["tenses"]:
+                for y in self.tenseItems:
+                    if getTenseIDByName(y.text(), preset["lang"]) == i:
+                        y.setCheckState(Qt.CheckState.Checked)
         except: 
             print("msgbox")
             msgBox = QMessageBox()
