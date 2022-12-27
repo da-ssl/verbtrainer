@@ -246,23 +246,23 @@ class mainWindow(QMainWindow):
         cur = conn.cursor()
         cur.execute(f'SELECT settings FROM presets WHERE name="{presetName}"')
         res = cur.fetchone()[0]
-        #try:
-        preset = json.loads(res)
-        self.comboBoxLang.setCurrentText(dics.supported_languages_2[preset["lang"]])
-        for i in self.verbListItems:
-            i.setCheckState(Qt.CheckState.Unchecked)
-        for i in preset["verbs"]:
-            for y in self.verbListItems:
-                if y.text() == i:
-                    y.setCheckState(Qt.CheckState.Checked)
-        for i in self.tenseItems:
-            i.setCheckState(Qt.CheckState.Unchecked)
-        """except: 
+        try:
+            preset = json.loads(res)
+            self.comboBoxLang.setCurrentText(dics.supported_languages_2[preset["lang"]])
+            for i in self.verbListItems:
+                i.setCheckState(Qt.CheckState.Unchecked)
+            for i in preset["verbs"]:
+                for y in self.verbListItems:
+                    if y.text() == i:
+                        y.setCheckState(Qt.CheckState.Checked)
+            for i in self.tenseItems:
+                i.setCheckState(Qt.CheckState.Unchecked)
+        except: 
             print("msgbox")
             msgBox = QMessageBox()
             msgBox.setText("Achtung: Das Preset ist fehlerhaft gespeichert worden.")
             msgBox.setWindowTitle("Fehler")
-            msgBox.exec()"""
+            msgBox.exec()
         
 
     def loadPresets(self):
