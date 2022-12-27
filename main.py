@@ -260,9 +260,9 @@ class mainWindow(QMainWindow):
         except: 
             print("msgbox")
             msgBox = QMessageBox()
-            msgBox.setText("Achtung: Das Preset ist fehlerhaft gespeichert worden.")
-            msgBox.setWindowTitle("Fehler")
-            msgBox.exec()
+            msgBox.warning(None, "Fehlerhafte Speicherung", \
+                "Achtung: Das Preset ist fehlerhaft gespeichert worden. Der Vorgang wurde abgebrochen", \
+                    QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
         
 
     def loadPresets(self):
