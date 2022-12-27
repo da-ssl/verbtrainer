@@ -146,3 +146,7 @@ supported_languages = {
     "Französisch": "fr"
 }
 
+supported_languages_2 = {
+    "it": "Italienisch",
+    "fr":"Französisch"
+}

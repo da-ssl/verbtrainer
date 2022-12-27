@@ -1,7 +1,7 @@
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
-import sys, sqlite3, random, datetime, dics, utils
+import sys, sqlite3, random, datetime, dics, utils, json
 
 conn = sqlite3.connect('verbs.db')
 personen = ["1PS","2PS", "3PS", "1PP", "2PP", "3PP"]
@@ -9,6 +9,25 @@ personen = ["1PS","2PS", "3PS", "1PP", "2PP", "3PP"]
 
 
 currentExerciseID = -1
+
+class MenuButton(QPushButton):
+    def __init__(self, caption, actions, parent=None):
+        super().__init__(parent)
+        
+        self.setText(caption)
+
+        # Erstelle ein QMenu-Objekt und füge Einträge hinzu
+        self.menu = QMenu(self)
+        for i in actions:
+            self.menu.addAction(f'{i}')
+        
+        # Weise das QMenu dem Button mit der Methode setMenu zu
+        self.setMenu(self.menu)
+
+    def clearMenuItems(self):
+        self.menu.clear()
+    def newAction(self, str):
+        self.menu.addAction(f'{str}')
 
 class abfrageFenster(QMainWindow):
     def __init__(self, lang, tenses, verbs, parent=None):
@@ -158,6 +177,9 @@ class mainWindow(QMainWindow):
         super().__init__()
         # Willkommen
         self.lblWelcome = QLabel("<h1>Wilkommen.</h1>")
+        # Presets
+        self.btnPresets = MenuButton("Preset laden...", ["Keine Presets vorhande..."], self)
+        self.loadPresets()
         # Sprache
         self.lblChooseLang = QLabel("Bitte Wählen Sie ihre Sprache aus.")
         self.comboBoxLang = QComboBox()
@@ -199,6 +221,7 @@ class mainWindow(QMainWindow):
         self.setCentralWidget(self.centralwidget)
         self.vlayout = QVBoxLayout()
         self.vlayout.addWidget(self.lblWelcome)
+        self.vlayout.addWidget(self.btnPresets)
         self.vlayout.addWidget(self.lblChooseLang)
         self.vlayout.addWidget(self.comboBoxLang)
         self.vlayout.addWidget(self.lblVerbs)
@@ -219,6 +242,51 @@ class mainWindow(QMainWindow):
         
         self.show()
     
+    def loadPreset(self, presetName):
+        cur = conn.cursor()
+        cur.execute(f'SELECT settings FROM presets WHERE name="{presetName}"')
+        res = cur.fetchone()[0]
+        #try:
+        preset = json.loads(res)
+        self.comboBoxLang.setCurrentText(dics.supported_languages_2[preset["lang"]])
+        for i in self.verbListItems:
+            i.setCheckState(Qt.CheckState.Unchecked)
+        for i in preset["verbs"]:
+            for y in self.verbListItems:
+                if y.text() == i:
+                    y.setCheckState(Qt.CheckState.Checked)
+        for i in self.tenseItems:
+            i.setCheckState(Qt.CheckState.Unchecked)
+        """except: 
+            print("msgbox")
+            msgBox = QMessageBox()
+            msgBox.setText("Achtung: Das Preset ist fehlerhaft gespeichert worden.")
+            msgBox.setWindowTitle("Fehler")
+            msgBox.exec()"""
+        
+
+    def loadPresets(self):
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM presets")
+        res = cur.fetchall()
+        self.btnPresets.clearMenuItems()
+        self.presetActions = []
+        for i in range(len(res)):
+            def create_action(i):
+                action = QAction(res[i][0])
+                action.triggered.connect(lambda:self.loadPreset(res[i][0]))
+                return action
+            self.presetActions.insert(i, create_action(i))
+            self.btnPresets.menu.addAction(self.presetActions[i])
+        
+    def contextMenuEvent(self, event):
+        contextMenu = QMenu(self)
+        newAct = contextMenu.addAction("New")
+        openAct = contextMenu.addAction("Open")
+        quitAct = contextMenu.addAction("Quit")
+        action = contextMenu.exec(self.mapToGlobal(event.pos()))
+        if action == quitAct:
+            self.close()
     def CheckAllTenses(self):
         for i in self.tenseItems:
             i.setCheckState(Qt.CheckState.Checked)
@@ -369,7 +437,7 @@ def analasys():
         if res[i][2] == 1: cor = "Richtig"
         if res[i][2] == 0: cor = "Falsch"
         self.table.setItem(i, 2, QTableWidgetItem(cor))
-        self.table.setRowHeight(i, 24)
+        self.table.setRowHeight(i, 16)
     self.centrallayout.addWidget(self.table)
 
     self.exec()
