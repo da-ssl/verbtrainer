@@ -105,7 +105,6 @@ class abfrageFenster(QMainWindow):
         self.centralwidget.setLayout(self.centrallayout)
         self.loadNewVerb()
         self.show()
-
     def loadFeedback(self):
         correctForm = conjugateVerb(self.cverb, self.cform, self.ctense, self.lang)
         eingabe = self.tbEingabe.text().strip()
@@ -134,7 +133,6 @@ class abfrageFenster(QMainWindow):
         self.tbEingabe.returnPressed.connect(self.btnNextVerb.click)
         self.btnEingabe.setVisible(False)
         self.btnNextVerb.setVisible(True)
-
     def confirmDialog(self) -> bool:
         msgBox = QMessageBox()
         ret = msgBox.question(self, "Bestätigen?", "Ihre Eingabe scheint leer zu sein. Wollen Sie fortfahren?")
@@ -142,7 +140,6 @@ class abfrageFenster(QMainWindow):
             return True
         else:
             return False
-
     def loadNewVerb(self):
         for i in [self.lblFeedback, self.lblFeedback2]:
             i.setText("")
@@ -249,7 +246,6 @@ class mainWindow(QMainWindow):
         self.setWindowTitle("Verbtrainer")
         
         self.show()
-    
     def loadPreset(self, presetName):
         cur = conn.cursor()
         cur.execute(f'SELECT settings FROM presets WHERE name="{presetName}"')
@@ -276,7 +272,6 @@ class mainWindow(QMainWindow):
             msgBox.warning(None, "Fehlerhafte Speicherung", \
                 "Achtung: Das Preset ist fehlerhaft gespeichert worden. Der Vorgang wurde abgebrochen", \
                     QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
-        
     def savePreset(self):
         presetName = []
         presetTenses = []
@@ -305,10 +300,22 @@ class mainWindow(QMainWindow):
         cur = conn.cursor()
         sql = f'INSERT INTO presets (name, settings, saved) '
         sql += f"VALUES ('{presetName}', '{str(presetSettings)}', '{datetime.datetime.now().isoformat()}')"
-        cur.execute(sql)
-        conn.commit()
-        self.loadPresets()
-
+        try:
+            cur.execute(sql)
+            conn.commit()
+            self.loadPresets()
+        except sqlite3.IntegrityError: # Falls Preset bereits vorhanden
+            yn = QMessageBox().question(None, "Achtung", "Es ist schon ein Preset mit diesem Namen vorhanden. Wollen Sie es überschreiben?")
+            if yn == 16384: # Falls ja geklickt wurde
+                try:
+                    sql = f"UPDATE presets SET settings='{str(presetSettings)}', saved='{datetime.datetime.now().isoformat()}'"
+                    sql += f"WHERE name='{presetName}'"
+                    print(sql)
+                    cur.execute(sql)
+                    conn.commit()
+                    self.loadPresets()
+                except: 
+                    QMessageBox().warning(None, "Fehler", "Fehler beim Speichern.")
     def loadPresets(self):
         cur = conn.cursor()
         cur.execute("SELECT * FROM presets")
@@ -322,7 +329,6 @@ class mainWindow(QMainWindow):
                 return action
             self.presetActions.insert(i, create_action(i))
             self.btnPresets.menu.addAction(self.presetActions[i])
-        
     def contextMenuEvent(self, event):
         contextMenu = QMenu(self)
         newAct = contextMenu.addAction("New")
@@ -376,7 +382,6 @@ class mainWindow(QMainWindow):
             self.tenseItems.insert(i, QListWidgetItem(self.listBoxTenses))
             self.tenseItems[i].setText(dics.tensenames[lang][tenses[i]])
             self.tenseItems[i].setCheckState(Qt.CheckState.Checked)
-
     def go(self):
         golang = self.currentlang
         goverbs = []
