@@ -79,7 +79,7 @@ tenses = {
     "it": [
         "presente", 
         "futuro", 
-        "passato prossimo",
+        "passatoprossimo",
         "imperfetto",
         "congiuntivo"
 ]}
@@ -109,7 +109,7 @@ tensenames = {
     "it": {
         "presente": "presente", 
         "futuro": "futuro", 
-        "passato prossimo": "passato prossimo",
+        "passatoprossimo": "passato prossimo",
         "imperfetto": "imperfetto",
         "congiuntivo": "congiuntivo"
         }
