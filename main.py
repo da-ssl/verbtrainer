@@ -25,6 +25,14 @@ class menuButton(QPushButton):
     def newAction(self, str):
         self.menu.addAction(f'{str}')
 
+class QLine(QFrame):
+    def __init__(self, parent=None):
+        super(QLine, self).__init__(parent)
+        self.setObjectName(u"line")
+        self.setGeometry(QRect(130, 150, 471, 51))
+        self.setFrameShape(QFrame.Shape.HLine)
+        self.setFrameShadow(QFrame.Shadow.Sunken)
+
 class abfrageFenster(QMainWindow):
     def __init__(self, lang, tenses, verbs, parent=None):
         super(abfrageFenster, self).__init__(parent)
@@ -52,27 +60,26 @@ class abfrageFenster(QMainWindow):
         self.gridLayoutEingabe.addWidget(self.lblVerb1, 0, 0)
         self.lblVerb2 = QLabel("Fehler.")
         self.gridLayoutEingabe.addWidget(self.lblVerb2, 0, 1)
-
         # Verform
         self.lblVerbform1 = QLabel("Verbform:")
         self.gridLayoutEingabe.addWidget(self.lblVerbform1, 1, 0)
         self.lblVerbform2 = QLabel("Fehler.")
         self.gridLayoutEingabe.addWidget(self.lblVerbform2, 1, 1)
-
         # Zeitform
         self.lblZeitform1 = QLabel("Zeitform:")
         self.gridLayoutEingabe.addWidget(self.lblZeitform1, 2, 0)
         self.lblZeitform2 = QLabel("Fehler.")
         self.gridLayoutEingabe.addWidget(self.lblZeitform2, 2, 1)
+        self.gridLayoutEingabe.addWidget(QLine(self), 3, 0, 1, 3)
 
         # Eingabe
         self.lblPronomen = QLabel("Fehler.")
         myFont=QFont()
         myFont.setBold(True)
         self.lblPronomen.setFont(myFont)
-        self.gridLayoutEingabe.addWidget(self.lblPronomen, 3, 1)
+        self.gridLayoutEingabe.addWidget(self.lblPronomen, 4, 0)
         self.tbEingabe = QLineEdit()
-        self.gridLayoutEingabe.addWidget(self.tbEingabe, 3, 2)
+        self.gridLayoutEingabe.addWidget(self.tbEingabe, 4, 1)
 
         # Button und Feedback
         self.btnEingabe = QPushButton("Eingabe")
@@ -85,19 +92,17 @@ class abfrageFenster(QMainWindow):
         self.btnAnalysis = QPushButton("Beenden und analysieren")
         self.btnAnalysis.clicked.connect(analasys)
 
-        self.gLayout2 = QGridLayout()
-        self.gLayout2.addWidget(self.btnEingabe, 0, 1)
-        self.gLayout2.addWidget(self.btnNextVerb, 0, 1)
-        self.gLayout2.addWidget(self.btnAnalysis, 1, 1)
+        self.gridLayoutEingabe.addWidget(self.btnEingabe, 5, 1)
+        self.gridLayoutEingabe.addWidget(self.btnNextVerb, 5, 1)
+        self.gridLayoutEingabe.addWidget(self.btnAnalysis, 6, 1)
         self.lblFeedback = QLabel()
         self.lblFeedback2 = QLabel()
-        self.gLayout2.addWidget(self.lblFeedback, 0, 0)
-        self.gLayout2.addWidget(self.lblFeedback2, 1, 0)
+        self.gridLayoutEingabe.addWidget(self.lblFeedback, 5, 0)
+        self.gridLayoutEingabe.addWidget(self.lblFeedback2, 6, 0)
 
         # Rest
         self.centrallayout = QVBoxLayout()
         self.centrallayout.addLayout(self.gridLayoutEingabe)
-        self.centrallayout.addLayout(self.gLayout2)
         self.centralwidget.setLayout(self.centrallayout)
         self.loadNewVerb()
         self.show()
