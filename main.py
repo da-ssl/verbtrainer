@@ -10,7 +10,7 @@ personen = ["1PS","2PS", "3PS", "1PP", "2PP", "3PP"]
 
 currentExerciseID = -1
 
-class MenuButton(QPushButton):
+class menuButton(QPushButton):
     def __init__(self, caption, actions, parent=None):
         super().__init__(parent)
         
@@ -178,7 +178,7 @@ class mainWindow(QMainWindow):
         # Willkommen
         self.lblWelcome = QLabel("<h1>Wilkommen.</h1>")
         # Presets
-        self.btnPresets = MenuButton("Preset laden...", ["Keine Presets vorhande..."], self)
+        self.btnPresets = menuButton("Preset laden...", ["Keine Presets vorhanden"], self)
         self.loadPresets()
         # Sprache
         self.lblChooseLang = QLabel("Bitte Wählen Sie ihre Sprache aus.")
@@ -212,6 +212,13 @@ class mainWindow(QMainWindow):
         self.hlayouttenseoptions.addWidget(self.btnNoTenses)
         self.loadTenses()
 
+        # Preset speichern
+        self.btnSavePreset = QPushButton("Als Preset speichern")
+        self.btnSavePreset.clicked.connect(self.savePreset)
+        self.btnSavePreset.setToolTip("Hiermit können Sie die aktuell ausgewählten Zeitformen\n" +
+            "und Verben in einem Preset speichern,\num sie später ganz einfach wieder zu laden\n" +
+            "und damit einfach bestimmte Vokabeln festigen.")
+
         # Go
         self.btnGo = QPushButton("Los")
         self.btnGo.clicked.connect(self.go)
@@ -230,6 +237,7 @@ class mainWindow(QMainWindow):
         self.vlayout.addWidget(self.lblTenses)
         self.vlayout.addWidget(self.listBoxTenses)
         self.vlayout.addLayout(self.hlayouttenseoptions)
+        self.vlayout.addWidget(self.btnSavePreset)
         self.vlayout.addWidget(self.btnGo)
         self.centralwidget.setLayout(self.vlayout)
 
@@ -262,13 +270,44 @@ class mainWindow(QMainWindow):
                 for y in self.tenseItems:
                     if getTenseIDByName(y.text(), preset["lang"]) == i:
                         y.setCheckState(Qt.CheckState.Checked)
-        except: 
-            print("msgbox")
+        except Exception as e: 
+            print(e)
             msgBox = QMessageBox()
             msgBox.warning(None, "Fehlerhafte Speicherung", \
                 "Achtung: Das Preset ist fehlerhaft gespeichert worden. Der Vorgang wurde abgebrochen", \
                     QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
         
+    def savePreset(self):
+        presetName = []
+        presetTenses = []
+        presetVerbs = []
+        presetLang = dics.supported_languages[self.comboBoxLang.currentText()]
+        presetName = ""
+        text, ok = QInputDialog().getText(self, "Name des Presets",
+                                     "Bitte geben Sie hier den Namen des Presets ein:", 
+                                     QLineEdit.EchoMode.Normal)
+        if text and ok: 
+            presetName = text
+        else:
+            h = QMessageBox()
+            h.setText("Sie haben keinen Presetnamen eingegeben, Aktion abgebrochen.")
+            h.setWindowIcon(QIcon(QPixmap("icon.svg")))
+            h.setWindowTitle("Aktion abgebrochen")
+            h.exec()
+            return
+        for i in self.tenseItems:
+            if i.checkState() == Qt.CheckState.Checked:
+                presetTenses.append(getTenseIDByName(i.text(), presetLang))
+        for i in self.verbListItems:
+            if i.checkState() == Qt.CheckState.Checked:
+                presetVerbs.append(i.text())
+        presetSettings = json.dumps({"lang": presetLang, "verbs": presetVerbs, "tenses": presetTenses})
+        cur = conn.cursor()
+        sql = f'INSERT INTO presets (name, settings, saved) '
+        sql += f"VALUES ('{presetName}', '{str(presetSettings)}', '{datetime.datetime.now().isoformat()}')"
+        cur.execute(sql)
+        conn.commit()
+        self.loadPresets()
 
     def loadPresets(self):
         cur = conn.cursor()
