@@ -7,7 +7,7 @@ For running the program, [Python](https://www.python.org) has to be installed on
     pip install -r requirements.txt
 
 ## Supported languages
-Currently, only Italien and French are supported and only with a limited number of verbs and tenses. This program does not use a library to conjuate the verbs, it has a (very dirty, please don't look at that dogshit) sqlite-database.
+Currently, only Italian and French are supported and only with a limited number of verbs and tenses. This program does not use a library to conjuate the verbs, it has a (very dirty, please don't look at that dogshit) sqlite-database.
 
 The User Interface is currently only available in German, but my goal is to add English in the near future.
 
