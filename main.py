@@ -37,10 +37,7 @@ class abfrageFenster(QMainWindow):
     def __init__(self, lang, tenses, verbs, parent=None):
         super(abfrageFenster, self).__init__(parent)
 
-        icon = QIcon()
-        sers = QPixmap("icon.svg")
-        icon.addPixmap(sers)
-        self.setWindowIcon(icon)
+        self.setWindowIcon(QIcon(QPixmap("icon.svg")))
 
         self.verbs = verbs
         self.lang = lang
