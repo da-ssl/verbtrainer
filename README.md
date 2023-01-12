@@ -12,4 +12,4 @@ Currently, only Italian and French are supported and only with a limited number 
 The User Interface is currently only available in German, but my goal is to add English in the near future.
 
 ## Screenshot
-![Tux, the Linux mascot](screenshot.png)
+![screenshot](screenshot.png)
